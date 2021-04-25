@@ -1,19 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 import {getEnhance, getSeam} from './api'; 
 import './App.css';
-import { Button, Card, CardContent, Input, Paper,  Slider,  TextField, Typography,} from "@material-ui/core";
+import { Button, Card, CardContent, Input, Paper,  Slider,  TextField, Typography, CircularProgress} from "@material-ui/core";
 
 
 function App() {
 
   const [seamValue, setSeamValue] = useState(20);
   const [offsets,setOffsets] = useState({});
-  const [notProcessing, setProcessing]  = useState(true);
+  const [processing,setProcessing] = useState(false);
+  const [imageState,setImage] = useState("");
+  const [fileState, setFile] = useState(null);
 
   const canvasRef = useRef(null);
   const imgRef = useRef(null);
   const contextRef = useRef(null);
-
+  const uploadRef = useRef(null); 
   function downloadImage(data, filename = 'untitled.jpeg') {
     var a = document.createElement('a');
     a.href = data;
@@ -64,32 +66,42 @@ function App() {
       img.height * ratio
     );
   }
-  useEffect(() => {
 
 
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
 
-    let img = new Image();
+  useEffect(()=>{
+
+    let image = new Image();
+
+    image.src = imageState;
+
+    image.onload = function () {
+      let canvas = canvasRef.current;
+      let ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      canvas.width = canvas.parentElement.clientWidth * 0.95;
+
+      canvas.height = canvas.parentElement.clientHeight * 0.95;
+
+      drawImageScaled(image, ctx);
+
+      canvas.removeAttribute("data-caman-id");
+      
+    };
+
+
+  },[imageState])
+
+
+useEffect(()=>{
+
+    const reader = new FileReader();
     let filename = "";
+    const file = fileState;
 
-    const uploadBtn = document.getElementById("uploadfile");
-
-    const menuDiv = document.getElementById("menu");
-
-    uploadBtn.addEventListener("change", (e) => {
-
-      const uploadFile = document.getElementById(
-        "uploadfile"
-      );
-
-      const imageFiles = uploadFile.files;
-
-      const file = imageFiles[0];
-
-      const reader = new FileReader();
-
-      if (file) {
+    if (file) {
         filename = file.name;
 
         reader.readAsDataURL(file);
@@ -99,38 +111,33 @@ function App() {
         "load",
         () => {
           //create image
-          img = new Image();
-          img.src = reader.result;
-          
-          
-          img.onload = function () {
-
-            canvas.width = canvas.parentElement.clientWidth * 0.95;
-
-            canvas.height = canvas.parentElement.clientHeight * 0.95;
-
-            drawImageScaled(img, ctx);
-
-            canvas.removeAttribute("data-caman-id");
-
-            imgRef.current = img;
-          };
+          setImage(reader.result)
         },
         false
       );
-    });
 
-  },[]);
+},[fileState])
 
-  function onProcess(){
 
-      const img = imgRef.current;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      drawImageScaled(img,ctx);
-    
+  async function onCarve(){
+
+    let response = await getSeam("data",100)
+
+    setImage(response);
+
   }
+  function onUpload(e){
+    // console.log(e.target)
+    const upload = uploadRef.current;
+    console.log(upload);
 
+    const imageFiles = upload.files;
+
+    const file = imageFiles[0];
+
+    setFile(file)
+
+  }
 
   return (
     <div className="app">
@@ -140,6 +147,8 @@ function App() {
             type="file"
             id="uploadfile"
             className="uploadbutton"
+            ref={uploadRef}
+            onChange={onUpload}
           ></input>
         </Button>
         <Button onClick={canvasSave}>
@@ -150,7 +159,7 @@ function App() {
 
       <Paper elevation={4} className="menu">
 
-      {notProcessing && <canvas className="canva" id="canvas" ref={canvasRef}></canvas> }  
+      {  processing? <CircularProgress />  : <canvas className="canva" id="canvas" ref={canvasRef}></canvas>  }  
 
       </Paper>
 
@@ -171,7 +180,7 @@ function App() {
         </Button>
 
         <Button id="process"
-         variant="contained" color="primary" onClick={onProcess}  >
+         variant="contained" color="primary" onClick={onCarve}  >
           <Typography >Carve</Typography>
         </Button>
 
