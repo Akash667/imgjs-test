@@ -12,7 +12,7 @@ mainWindow = new BrowserWindow({
         },
         resizable:false
     });
-mainWindow.loadURL('http://localhost:3441');
+mainWindow.loadURL('http://localhost:1234');
 mainWindow.webContents.openDevTools();
 mainWindow.on('closed', function () {
         mainWindow = null
