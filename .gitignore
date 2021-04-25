@@ -5,7 +5,7 @@
 /flaskapi/env
 /.pnp
 .pnp.js
-
+.vscode
 # testing
 /coverage
 
