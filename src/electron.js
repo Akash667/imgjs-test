@@ -9,9 +9,10 @@ mainWindow = new BrowserWindow({
         height: 768,
         webPreferences:{
             nodeIntegration:true
-        }
+        },
+        resizable:false
     });
-mainWindow.loadURL('http://localhost:3000');
+mainWindow.loadURL('http://localhost:3441');
 mainWindow.webContents.openDevTools();
 mainWindow.on('closed', function () {
         mainWindow = null

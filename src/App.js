@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {getEnhance, getSeam} from './api';
+import {getEnhance, getSeam} from './api'; 
 import './App.css';
 import { Button, Card, CardContent, Input, Paper,  Slider,  TextField, Typography,} from "@material-ui/core";
 
@@ -7,9 +7,12 @@ import { Button, Card, CardContent, Input, Paper,  Slider,  TextField, Typograph
 function App() {
 
   const [seamValue, setSeamValue] = useState(20);
+  const [offsets,setOffsets] = useState({});
+  const [notProcessing, setProcessing]  = useState(true);
 
   const canvasRef = useRef(null);
-  const [imageValue, setImageValue] = useState({});
+  const imgRef = useRef(null);
+  const contextRef = useRef(null);
 
   function downloadImage(data, filename = 'untitled.jpeg') {
     var a = document.createElement('a');
@@ -21,32 +24,48 @@ function App() {
 
   function canvasSave(){
     let canvas = canvasRef.current;
-    var dataURL = canvas.toDataURL("image/jpeg", 1.0);
+    let img = imgRef.current;
 
+    let newCanvas = document.createElement('canvas');
+    newCanvas.width = offsets.w;
+    newCanvas.height = offsets.h;
+    let newContext = newCanvas.getContext("2d");
+
+    newContext.drawImage(canvas,offsets.x,offsets.y,offsets.w,offsets.h,0,0,offsets.w,offsets.h)
+
+    let dataURL = newCanvas.toDataURL("image/jpeg",1.0);
+    
     downloadImage(dataURL, 'my-canvas.jpeg');
   }
 
+  function drawImageScaled(img,ctx) {
+    let canvas = ctx.canvas;
+    let hRatio = canvas.width / img.width;
+    let vRatio = canvas.height / img.height;
+    let ratio = Math.min(hRatio, vRatio);
+    let centerShift_x = (canvas.width - img.width * ratio) / 2;
+    let centerShift_y = (canvas.height - img.height * ratio) / 2;
+    setOffsets({
+      x:centerShift_x,
+      y:centerShift_y,
+      h:img.height*ratio,
+      w:img.width*ratio
+    })
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(
+      img,
+      0,
+      0,
+      img.width,
+      img.height,
+      centerShift_x,
+      centerShift_y,
+      img.width * ratio,
+      img.height * ratio
+    );
+  }
   useEffect(() => {
-    function drawImageScaled(img,ctx) {
-      let canvas = ctx.canvas;
-      let hRatio = canvas.width / img.width;
-      let vRatio = canvas.height / img.height;
-      let ratio = Math.min(hRatio, vRatio);
-      let centerShift_x = (canvas.width - img.width * ratio) / 2;
-      let centerShift_y = (canvas.height - img.height * ratio) / 2;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(
-        img,
-        0,
-        0,
-        img.width,
-        img.height,
-        centerShift_x,
-        centerShift_y,
-        img.width * ratio,
-        img.height * ratio
-      );
-    }
+
 
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -82,7 +101,7 @@ function App() {
           //create image
           img = new Image();
           img.src = reader.result;
-          setImageValue(reader.result)
+          
           
           img.onload = function () {
 
@@ -91,8 +110,10 @@ function App() {
             canvas.height = canvas.parentElement.clientHeight * 0.95;
 
             drawImageScaled(img, ctx);
+
             canvas.removeAttribute("data-caman-id");
 
+            imgRef.current = img;
           };
         },
         false
@@ -101,7 +122,14 @@ function App() {
 
   },[]);
 
+  function onProcess(){
 
+      const img = imgRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      drawImageScaled(img,ctx);
+    
+  }
 
 
   return (
@@ -121,7 +149,9 @@ function App() {
       </label>
 
       <Paper elevation={4} className="menu">
-        <canvas className="canva" id="canvas" ref={canvasRef}></canvas>
+
+      {notProcessing && <canvas className="canva" id="canvas" ref={canvasRef}></canvas> }  
+
       </Paper>
 
       <Paper elevation={4} id="menu" className="toolbar">
@@ -141,7 +171,7 @@ function App() {
         </Button>
 
         <Button id="process"
-         variant="contained" color="primary"  >
+         variant="contained" color="primary" onClick={onProcess}  >
           <Typography >Carve</Typography>
         </Button>
 
