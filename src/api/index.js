@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const seamApi = ""
+const seamApi = "http://localhost:105/"
 const enchanceApi = ""
 
 const api = axios.create({
@@ -10,12 +10,12 @@ const api = axios.create({
 
 async function getSeam(data,noOfSeams){
 
-    const response = await axios.post(seamApi+"/seam",{
+    const response = await axios.post(seamApi+"/hello/",{
         imgData:data,
         seams:noOfSeams
     })
-    console.log(response.data)
-    return response
+    
+    return response.data
    
 }
 
@@ -27,6 +27,5 @@ async function getEnhance(data){
 
 }
 
-export  {getSeam , getEnhance }
+export  {getSeam , getEnhance };
 
-getSeam("asdsadasdasd",1000);
