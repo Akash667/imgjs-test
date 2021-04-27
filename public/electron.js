@@ -3,6 +3,7 @@ const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 let mainWindow;
 
+app.commandLine.appendSwitch ("disable-http-cache");
 function createWindow() {
 mainWindow = new BrowserWindow({
         width: 1024, 

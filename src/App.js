@@ -128,8 +128,10 @@ useEffect(()=>{
 
     setProcessing(true);
 
-    let response = await getSeam(imageState,dState)
-    setD(dState+1)
+
+    let response = await getSeam(imageState,seamValue)
+    
+
     setImage(response);
 
   }
@@ -138,15 +140,15 @@ useEffect(()=>{
     
     setProcessing(true);
 
-    let response = await getSeam(imageState,dState);
-    setD(dState+1)
+    let response = await getEnhance(imageState);
+ 
     setImage(response)
 
   }
   function onUpload(e){
     // console.log(e.target)
     const upload = uploadRef.current;
-    console.log(upload);
+  
 
     const imageFiles = upload.files;
 

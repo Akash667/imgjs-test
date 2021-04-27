@@ -21,7 +21,7 @@ async function getSeam(data,noOfSeams){
 
 async function getEnhance(data){
 
-    const response = await axios.post(seamApi+"/seam/",{
+    const response = await axios.post(seamApi+"/illum/",{
         "imgData":data
     })
  
