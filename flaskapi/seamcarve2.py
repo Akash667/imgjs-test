@@ -1,4 +1,5 @@
 import cv2
+import numba
 import numpy as np
 import os
 import errno
@@ -8,6 +9,8 @@ import base64
 from PIL import Image
 from numba import jit
 import uuid
+
+
 
 def calc_img_energy(image):
     image = image.astype('float32')
@@ -142,6 +145,7 @@ def input_funct(figure, num_seams):
     path = os.path.join(os.getcwd(), '')
     img = np.copy(figure)
     # print(type(img))
+    
     for c in range(num_seams):
         energy_map = calc_img_energy(img)
         energy_map_forward, backtrack = calc_seam_cost_forward(energy_map)
@@ -185,7 +189,12 @@ def input_funct(figure, num_seams):
 
 
 def data_uri_to_cv2_img(uri):
-    encoded_data = uri.split(',')[1]
+    print(uri[:20])
+    encoded_data = ""
+    if uri[:5] != "data":
+        encoded_data = uri
+    else:
+        encoded_data = uri.split(',')[1]
 
     nparr = np.fromstring(base64.b64decode(encoded_data), np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)

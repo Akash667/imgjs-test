@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import {getEnhance, getSeam} from './api'; 
 import './App.css';
-import { Button, Card, CardContent, Input, Paper,  Slider,  TextField, Typography, CircularProgress} from "@material-ui/core";
+import { Button, Paper, Typography, CircularProgress} from "@material-ui/core";
 
 
 function App() {
@@ -11,11 +11,14 @@ function App() {
   const [processing,setProcessing] = useState(false);
   const [imageState,setImage] = useState("");
   const [fileState, setFile] = useState(null);
+  const [dState, setD] = useState(1)
+
 
   const canvasRef = useRef(null);
   const imgRef = useRef(null);
   const contextRef = useRef(null);
   const uploadRef = useRef(null); 
+
   function downloadImage(data, filename = 'untitled.jpeg') {
     var a = document.createElement('a');
     a.href = data;
@@ -67,9 +70,9 @@ function App() {
     );
   }
 
-
-
   useEffect(()=>{
+
+    setProcessing(false);
 
     let image = new Image();
 
@@ -88,6 +91,8 @@ function App() {
       drawImageScaled(image, ctx);
 
       canvas.removeAttribute("data-caman-id");
+
+      imgRef.current = image;
       
     };
 
@@ -121,9 +126,21 @@ useEffect(()=>{
 
   async function onCarve(){
 
-    let response = await getSeam("data",100)
+    setProcessing(true);
 
+    let response = await getSeam(imageState,dState)
+    setD(dState+1)
     setImage(response);
+
+  }
+
+  async function onIlluminate(){
+    
+    setProcessing(true);
+
+    let response = await getSeam(imageState,dState);
+    setD(dState+1)
+    setImage(response)
 
   }
   function onUpload(e){
@@ -159,7 +176,7 @@ useEffect(()=>{
 
       <Paper elevation={4} className="menu">
 
-      {  processing? <CircularProgress />  : <canvas className="canva" id="canvas" ref={canvasRef}></canvas>  }  
+      <canvas className="canva" id="canvas" ref={canvasRef}></canvas>  
 
       </Paper>
 
@@ -178,17 +195,22 @@ useEffect(()=>{
           variant="contained" color="primary" onClick={() => setSeamValue(seamValue + 10)}>
           <Typography >{">"}</Typography>
         </Button>
-
+       
         <Button id="process"
          variant="contained" color="primary" onClick={onCarve}  >
           <Typography >Carve</Typography>
+
         </Button>
 
+
         <Button id="illuminate"
-         variant="contained" color="primary" >
+         variant="contained" color="primary" onClick={onIlluminate} >
           <Typography >Illuminate</Typography>
         </Button>
 
+         <div id="loadingbar">
+            {processing?<CircularProgress/>:<></>}
+           </div>  
 
       </Paper>
 

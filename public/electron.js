@@ -8,11 +8,12 @@ mainWindow = new BrowserWindow({
         width: 1024, 
         height: 768,
         webPreferences:{
-            nodeIntegration:true
+            nodeIntegration:true,
+            webSecurity: false
         },
         resizable:false
     });
-mainWindow.loadURL('http://localhost:1234');
+mainWindow.loadURL('http://localhost:65000');
 
 mainWindow.on('closed', function () {
         mainWindow = null
