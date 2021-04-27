@@ -11,7 +11,6 @@ function App() {
   const [processing,setProcessing] = useState(false);
   const [imageState,setImage] = useState("");
   const [fileState, setFile] = useState(null);
-  const [dState, setD] = useState(1)
 
 
   const canvasRef = useRef(null);
